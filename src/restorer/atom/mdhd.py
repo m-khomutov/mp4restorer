@@ -27,12 +27,13 @@ class MediaHeaderBox(FullBox):
 
     def __bytes__(self) -> bytes:
         sz: int = 8 if self._version else 4
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(self._timescale.to_bytes(4, 'big'))
-        rc.append(self._duration.to_bytes(sz, 'big'))
-        rc.append(bytes(self._language))
-        rc.append(b'\x00\x00')
+        rc: List[bytes] = [
+            super().__bytes__(),
+            int(time.time()).to_bytes(sz, 'big'),
+            int(time.time()).to_bytes(sz, 'big'),
+            self._timescale.to_bytes(4, 'big'),
+            self._duration.to_bytes(sz, 'big'),
+            bytes(self._language),
+            b'\x00\x00'
+        ]
         return b''.join(rc)

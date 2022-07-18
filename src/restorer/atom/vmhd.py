@@ -8,7 +8,4 @@ class VideoMediaHeaderBox(FullBox):
         self._size += 8
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.extend([b'\x00' for _ in range(8)])
-        return b''.join(rc)
+        return b''.join([super().__bytes__(), b'\x00\x00\x00\x00\x00\x00\x00\x00'])

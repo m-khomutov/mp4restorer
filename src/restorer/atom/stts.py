@@ -16,8 +16,6 @@ class TimeToSampleBox(FullBox):
             self._entries[-1] = (self._entries[-1][0] + 1, delta)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(len(self._entries).to_bytes(4, 'big'))
+        rc: List[bytes] = [super().__bytes__(), len(self._entries).to_bytes(4, 'big')]
         rc.extend([e.to_bytes(4, 'big') for entry in self._entries for e in entry])
         return b''.join(rc)

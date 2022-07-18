@@ -9,9 +9,10 @@ class DataEntryUrlBox(FullBox):
         self._size += len(self._location)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(self._location.encode())
+        rc: List[bytes] = [
+            super().__bytes__(),
+            self._location.encode()
+        ]
         return b''.join(rc)
 
 
@@ -23,11 +24,11 @@ class DataEntryUrnBox(FullBox):
         self._size += len(self._name) + len(self._location) + 1
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(self._name.encode())
-        rc.append(b'\x00')
-        rc.append(self._location.encode())
+        rc: List[bytes] = [
+            super().__bytes__(),
+            self._name.encode(), b'\x00',
+            self._location.encode()
+        ]
         return b''.join(rc)
 
 
@@ -42,9 +43,10 @@ class DataReferenceBox(FullBox):
         self._size += len(box)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(len(self._entries).to_bytes(4, 'big'))
+        rc: List[bytes] = [
+            super().__bytes__(),
+            len(self._entries).to_bytes(4, 'big')
+        ]
         if self._entries:
             rc.extend([bytes(x) for x in self._entries])
         return b''.join(rc)

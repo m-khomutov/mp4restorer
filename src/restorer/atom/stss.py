@@ -10,9 +10,7 @@ class SyncSampleBox(FullBox):
         self._frame_number: int = 1
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(len(self._entries).to_bytes(4, 'big'))
+        rc: List[bytes] = [super().__bytes__(), len(self._entries).to_bytes(4, 'big')]
         rc.extend([e.to_bytes(4, 'big') for e in self._entries])
         return b''.join(rc)
 

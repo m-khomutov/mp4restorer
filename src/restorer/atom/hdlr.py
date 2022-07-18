@@ -10,11 +10,11 @@ class HandlerBox(FullBox):
         self._size += 21 + len(self._name)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(b'\x00\x00\x00\x00')
-        rc.append(self._handler.encode())
-        rc.append(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-        rc.append(self._name.encode())
-        rc.append(b'\x00')
+        rc: List[bytes] = [
+            super().__bytes__(),
+            b'\x00\x00\x00\x00',
+            self._handler.encode(),
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            self._name.encode(), b'\x00'
+        ]
         return b''.join(rc)

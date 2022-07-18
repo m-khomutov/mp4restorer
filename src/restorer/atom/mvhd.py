@@ -14,14 +14,15 @@ class MovieHeaderBox(FullBox):
 
     def __bytes__(self) -> bytes:
         sz: int = 8 if self._version else 4
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(self._timescale.to_bytes(4, 'big'))
-        rc.append(self._duration.to_bytes(sz, 'big'))
-        rc.append(b'\x00\x01\x00\x00')
-        rc.append(b'\x01\x00')
+        rc: List[bytes] = [
+            super().__bytes__(),
+            int(time.time()).to_bytes(sz, 'big'),
+            int(time.time()).to_bytes(sz, 'big'),
+            self._timescale.to_bytes(4, 'big'),
+            self._duration.to_bytes(sz, 'big'),
+            b'\x00\x01\x00\x00',
+            b'\x01\x00'
+        ]
         rc.extend([b'\x00' for _ in range(10)])
         rc.extend([x.to_bytes(4, 'big') for x in [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000]])
         rc.extend([b'\x00' for _ in range(24)])

@@ -13,9 +13,6 @@ class SampleSizeBox(FullBox):
         self._size += 4
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(int(0).to_bytes(4, 'big'))
-        rc.append(len(self._entries).to_bytes(4, 'big'))
+        rc: List[bytes] = [super().__bytes__(), b'\x00\x00\x00\x00', len(self._entries).to_bytes(4, 'big')]
         rc.extend([sz.to_bytes(4, 'big') for sz in self._entries])
         return b''.join(rc)

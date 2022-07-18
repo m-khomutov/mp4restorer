@@ -5,14 +5,11 @@ from .avcc import AvcC
 
 class SampleEntry(Box):
     def __init__(self, type_: str):
-        super().__init__(type_)
+        super().__init__(type=type_)
         self._size += 8
 
     def __bytes__(self):
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(b'\x00\x00\x00\x00\x00\x00\x00\x01')
-        return b''.join(rc)
+        return b''.join([super().__bytes__(), b'\x00\x00\x00\x00\x00\x00\x00\x01'])
 
 
 class VisualSampleEntry(SampleEntry):
@@ -27,19 +24,20 @@ class VisualSampleEntry(SampleEntry):
         self._size += 70 + len(self._avcc)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.extend([b'\x00' for _ in range(16)])
-        rc.append(self._width.to_bytes(2, 'big'))
-        rc.append(self._height.to_bytes(2, 'big'))
-        rc.append(b'\x00\x48\x00\x00')
-        rc.append(b'\x00\x48\x00\x00')
-        rc.append(b'\x00\x00\x00\x00')
-        rc.append(b'\x00\x01')
-        rc.append(self._compressor)
-        rc.append(b'\x00\x18')
-        rc.append(b'\xff\xff')
-        rc.append(bytes(self._avcc))
+        rc: List[bytes] = [
+            super().__bytes__(),
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            self._width.to_bytes(2, 'big'),
+            self._height.to_bytes(2, 'big'),
+            b'\x00\x48\x00\x00',
+            b'\x00\x48\x00\x00',
+            b'\x00\x00\x00\x00',
+            b'\x00\x01',
+            self._compressor,
+            b'\x00\x18',
+            b'\xff\xff',
+            bytes(self._avcc)
+        ]
         return b''.join(rc)
 
 
@@ -54,8 +52,6 @@ class SampleTableBox(FullBox):
         self._size += len(entry)
 
     def __bytes__(self) -> bytes:
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(len(self._entries).to_bytes(4, 'big'))
+        rc: List[bytes] = [super().__bytes__(), len(self._entries).to_bytes(4, 'big')]
         rc.extend([bytes(e) for e in self._entries])
         return b''.join(rc)

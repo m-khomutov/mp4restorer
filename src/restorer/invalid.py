@@ -1,4 +1,7 @@
 import io
+import struct
+from typing import List
+from .atom.atom import Box
 
 
 def file_size(fl) -> int:
@@ -65,9 +68,28 @@ class Invalid:
             self._file = open(name, 'rb')
         except OSError as err:
             raise InvalidError(err)
+        if self._verify():
+            raise InvalidError('file is valid')
+        self._file.seek(0)
 
     def __del__(self):
         self._file.close()
 
     def __iter__(self):
         return InvalidIterator(self._file)
+
+    def _verify(self) -> bool:
+        atoms: List[str] = []
+        fs = file_size(self._file)
+        while True:
+            try:
+                pos: int = self._file.tell()
+                b = Box(file=self._file)
+                atoms.append(str(b))
+                pos += len(b)
+                if len(b) == 0 or pos == fs:
+                    break
+                self._file.seek(pos)
+            except struct.error:
+                return False
+        return 'moov' in atoms

@@ -16,13 +16,14 @@ class TrackHeaderBox(FullBox):
 
     def __bytes__(self) -> bytes:
         sz: int = 8 if self._version else 4
-        rc: List[bytes] = list()
-        rc.append(super().__bytes__())
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(int(time.time()).to_bytes(sz, 'big'))
-        rc.append(self._track_id.to_bytes(4, 'big'))
-        rc.append(b'\x00\x00\x00\x00')
-        rc.append(self._duration.to_bytes(sz, 'big'))
+        rc: List[bytes] = [
+            super().__bytes__(),
+            int(time.time()).to_bytes(sz, 'big'),
+            int(time.time()).to_bytes(sz, 'big'),
+            self._track_id.to_bytes(4, 'big'),
+            b'\x00\x00\x00\x00',
+            self._duration.to_bytes(sz, 'big')
+        ]
         rc.extend([b'\x00' for _ in range(16)])
         rc.extend([x.to_bytes(4, 'big') for x in [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000]])
         rc.append(self._width.to_bytes(4, 'big'))
