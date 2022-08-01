@@ -1,4 +1,3 @@
-from typing import List
 from .atom import FullBox
 
 

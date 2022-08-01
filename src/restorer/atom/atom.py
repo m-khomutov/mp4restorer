@@ -35,7 +35,7 @@ class Box:
             self._size, t = struct.unpack('!II', file.read(8))
             self._type = ''.join(chr((t >> (i * 8)) & 0xff) for i in range(3, -1, -1))
             if self._size == 1:
-                self._size = struct.unpack('!Q', file.read(8))
+                self._size = struct.unpack('!Q', file.read(8))[0]
 
 
 class FullBox(Box):

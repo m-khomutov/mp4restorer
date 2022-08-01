@@ -51,9 +51,10 @@ class InvalidIterator:
     def __next__(self):
         try:
             frame_size: int = int.from_bytes(self._file.read(4), byteorder='big')
+            if not frame_size:
+                raise StopIteration
             if self._file.tell() + frame_size <= self._file_size:
-                percent: int = int(1 + 100 * (self._file.tell() + frame_size) / self._file_size)
-                return self._file.read(frame_size), percent
+                return self._file.read(frame_size)
         except OSError as err:
             print(err)
         raise StopIteration

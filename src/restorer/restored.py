@@ -16,7 +16,7 @@ from .atom.stsz import SampleSizeBox
 from .atom.stco import ChunkOffsetBox
 from .atom.avcc import AvcC
 from .invalid import Invalid, InvalidError
-from .recorder import Channel, RecorderError
+from .recorder import Channel, RecorderError, Dump
 
 
 class RestoredError(BaseException):
@@ -29,7 +29,7 @@ class Restored:
         self._sps: bytes = b''
         self._pps: bytes = b''
         if kwargs.get('channel'):
-            channel = Channel(kwargs.get('channel'))
+            channel: Channel = kwargs.get('channel')
             self._sps = channel.sps
             self._pps = channel.pps
         else:
@@ -101,30 +101,19 @@ class Restored:
 
 def restore():
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description='mp4 format restorer')
-    parser.add_argument('invalid', type=str, help='invalid mp4 file')
-    parser.add_argument('-channel', type=str, help='invalidly dumped channel')
     parser.add_argument('-sps', type=str, help='stream SPS')
     parser.add_argument('-pps', type=str, help='stream PPS')
+    parser.add_argument('conf', type=str, help='recorder configuration file')
+    parser.add_argument('dump', type=str, help='dumped file to check')
     parser.add_argument('restored', type=str, help='restored mp4 file')
     args: argparse.Namespace = parser.parse_args()
     try:
-        inv: Invalid = Invalid(args.invalid)
-        count: int = 0
-        with Restored(args.restored, channel=args.channel, sps=args.sps, pps=args.pps) as r:
-            print('reading mdat')
-            for frame, percent in inv:
+        inv: Invalid = Invalid(args.dump)
+        with Restored(args.restored, channel=Dump(args.conf, args.dump).channel, sps=args.sps, pps=args.pps) as r:
+            for frame in inv:
                 r.add_frame(frame, 40)
-                count += 1
-                print(f'frame: {int(count)} ({percent}%)\r', end='')
-            print('\ncompiling moov')
         with open(args.restored, 'ab') as f:
-            print('storing mdat ')
-            count = 0
-            for frame, percent in inv:
+            for frame in inv:
                 f.write(len(frame).to_bytes(4, 'big') + frame)
-                count += 1
-                print(f'frame: {int(count)} ({percent}%)\r', end='')
-        print('\nOk')
-
     except (InvalidError, RecorderError, FileNotFoundError, IndexError, EOFError) as e:
         print(e)

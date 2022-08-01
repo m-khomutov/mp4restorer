@@ -1,3 +1,4 @@
+import json
 import os
 import struct
 from typing import Dict, Tuple
@@ -88,3 +89,48 @@ class Recorder:
         except (RecorderError, FileNotFoundError, IndexError, EOFError):
             return False
         return True
+
+
+class Dump:
+    _jobs_info_dir_key: str = 'jobs-info-dir'
+    _root_dir: str = 'root-dir'
+
+    def __init__(self, conf: str, dump_path: str):
+        self._jobs_dir: str = ''
+        self._root: str = ''
+        self._read_conf(conf)
+        if not self._jobs_dir:
+            raise RecorderError(f'failed to find key {self.__class__._jobs_info_dir_key} in {conf}')
+        if not self._root:
+            raise RecorderError(f'failed to find key {self.__class__._root_dir} in {conf}')
+        self._channel_path: str = os.path.join(self._root, self._find_channel_path(dump_path))
+
+    @property
+    def channel(self):
+        return Channel(self._channel_path)
+
+    def _read_conf(self, filename: str):
+        with open(filename, 'r') as f:
+            in_dumping: bool = False
+            for line in f:
+                line = line.strip(' ",\n').split(':')
+                if len(line) == 2:
+                    key = line[0].strip(' ",\n')
+                    if key == 'Dumping':
+                        in_dumping = True
+                    elif in_dumping and key == self.__class__._jobs_info_dir_key:
+                        self._jobs_dir = line[1].split('#')[0].strip(' ",\n')
+                    elif key == self.__class__._root_dir:
+                        self._root = line[1].strip(' [",]\n') if ']' in line[1] else f.readline().strip(' ",\n')
+                elif line[0] == '}' and in_dumping:
+                    in_dumping = False
+                if self._jobs_dir and self._root:
+                    break
+
+    def _find_channel_path(self, dump_path: str) -> str:
+        for fn in os.listdir(self._jobs_dir):
+            with open(os.path.join(self._jobs_dir, fn), 'r') as f:
+                job: dict = json.load(f)
+                if job['file']['path'] == dump_path:
+                    return job['settings']['channelid']
+        raise RecorderError(f'failed to find job for dump {dump_path}')
