@@ -14,10 +14,11 @@ class ChunkOffsetBox(FullBox):
         rc.extend([e.to_bytes(4, 'big') for e in self._entries])
         return b''.join(rc)
 
-    def add(self, frame_size: int):
-        self._entries.append(self._current_offset)
-        self._current_offset += frame_size
-        self._size += 4
+    def add(self, frame: bytes):
+        if frame[0] & 0x1f == 5:
+            self._entries.append(self._current_offset)
+            self._size += 4
+        self._current_offset += len(frame) + 4
 
     def move(self, offset: int):
         for i, _ in enumerate(self._entries):

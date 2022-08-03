@@ -77,7 +77,7 @@ class Restored:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._stbl.add(self._stts)
         self._stbl.add(self._stss)
-        self._stbl.add(self._stsc)
+        self._stbl.add(self._stsc.flush())
         self._stbl.add(self._stsz)
         self._stbl.add(self._stco)
         self._minf.add(self._stbl)
@@ -93,8 +93,8 @@ class Restored:
     def add_frame(self, frame: bytes, ts_delta: int):
         self._stts.add(ts_delta)
         self._stss.add(frame[0])
-        self._stsc.add(len(frame))
-        self._stco.add(len(frame) + 4)
+        self._stsc.add(frame[0])
+        self._stco.add(frame)
         self._stsz.add(len(frame) + 4)
         self._mdat.inc(len(frame) + 4)
 
