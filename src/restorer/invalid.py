@@ -68,9 +68,9 @@ class Invalid:
         try:
             self._file = open(name, 'rb')
         except OSError as err:
-            raise InvalidError(err)
+            raise InvalidError(f'{name} error: {err}')
         if self._verify():
-            raise InvalidError('file is valid')
+            raise InvalidError(f'{name} is valid')
         self._file.seek(0)
 
     def __del__(self):

@@ -29,7 +29,7 @@ class IndexBlock:
             self.block_id,\
             self.mark = struct.unpack('=BBBQQQQIIQQQQH', self._block)
         if self.mark != 0xbabe:
-            raise EOFError
+            raise EOFError()
 
     @property
     def relative_timestamp(self):
@@ -49,7 +49,7 @@ class IndexBlock:
 class Channel:
     def __init__(self, folder) -> None:
         if not os.path.isdir(folder) or not os.path.isfile(os.path.join(folder, 'channel.config')):
-            raise RecorderError('invalid channel structure')
+            raise RecorderError(f'{folder}: invalid channel structure')
 
         data_file = os.path.join(folder, sorted([fn for fn in os.listdir(folder) if fn.endswith('.data')])[0])
         try:
@@ -70,7 +70,7 @@ class Channel:
                     if self.sps and self.pps:
                         break
         except EOFError:
-            raise RecorderError('failed to find sps/pps')
+            raise RecorderError(f'{folder}: failed to find sps/pps')
 
 
 class Recorder:

@@ -100,19 +100,19 @@ class Restored:
 
 
 def restore():
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(description='mp4 format restorer')
+    parser = argparse.ArgumentParser(description='Verifies dumped mp4 file. Restores if invalid')
     parser.add_argument('-sps', type=str, help='stream SPS')
     parser.add_argument('-pps', type=str, help='stream PPS')
     parser.add_argument('conf', type=str, help='recorder configuration file')
     parser.add_argument('dump', type=str, help='dumped file to check')
-    parser.add_argument('restored', type=str, help='restored mp4 file')
     args: argparse.Namespace = parser.parse_args()
     try:
         inv: Invalid = Invalid(args.dump)
-        with Restored(args.restored, channel=Dump(args.conf, args.dump).channel, sps=args.sps, pps=args.pps) as r:
+        r_name: str = args.dump.split('.mp4')[0] + '-r.mp4'
+        with Restored(r_name, channel=Dump(args.conf, args.dump).channel, sps=args.sps, pps=args.pps) as r:
             for frame in inv:
                 r.add_frame(frame, 40)
-        with open(args.restored, 'ab') as f:
+        with open(r_name, 'ab') as f:
             for frame in inv:
                 f.write(len(frame).to_bytes(4, 'big') + frame)
     except (InvalidError, RecorderError, FileNotFoundError, IndexError, EOFError) as e:

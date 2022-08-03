@@ -1,4 +1,4 @@
-# pymp4restorer Package
+# mp4restorer Package
 
 **Installation**
 
@@ -6,21 +6,23 @@
 
 **Usage**
 
-`mp4restore [-h] [-channel CHANNEL] [-sps SPS] [-pps PPS] invalid restored`
+`mp4restore [-h] [-sps SPS] [-pps PPS] conf dump`
 
-Takes sps/pps from record channel. Searches 'mdat' atom in invalid file.
-Compiles required atoms of mp4 structure. Saves the result in restored file.
+Verifies mp4 file is correct by reading 'moov' and 'mdat' atoms.
+Restores the file if incorrect using video data from 'mdat' and sps/pps from record channel.
+Restored file name is compiled from initial file name and '-r' suffix.
+Should be used as dumping post script.
 
 
 **positional arguments**
-* invalid           file with 'mdat' atom
-* restored          resulted mp4 file
+* conf        recorder configuration file
+* dump        mp4 file to check
+
 
 **optional arguments**
-* -h, --help        show this help message and exit
-* -channel CHANNEL  invalidly dumped channel
-* -sps SPS          stream SPS
-* -pps PPS          stream PPS
+* -h, --help  show this help message and exit
+* -sps params   stream SPS
+* -pps params   stream PPS
 
 
 **restrictions**
@@ -30,4 +32,6 @@ Compiles required atoms of mp4 structure. Saves the result in restored file.
 
 **example**
 
-mp4restore -channel /opt/netris/istream3/storage/rec/toystory/ ~/mp4/toystory\_blv.mp4 restored.mp4
+Value of '.Recording.Dumping.post-script-path' setting
+
+`"post-script-path" : ["/home/mkh/.local/bin/mp4restore","","/opt/netris/istream3/etc/istream3.json","{dump.path}"],`
