@@ -1,7 +1,7 @@
 import json
 import os
 import struct
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 
 class RecorderError(BaseException):
@@ -98,16 +98,20 @@ class Dump:
     def __init__(self, conf: str, dump_path: str):
         self._jobs_dir: str = ''
         self._root: str = ''
-        self._read_conf(conf)
-        if not self._jobs_dir:
-            raise RecorderError(f'failed to find key {self.__class__._jobs_info_dir_key} in {conf}')
-        if not self._root:
-            raise RecorderError(f'failed to find key {self.__class__._root_dir} in {conf}')
-        self._channel_path: str = os.path.join(self._root, self._find_channel_path(dump_path))
+        self._channel: Optional[Channel] = None
+        try:
+            self._read_conf(conf)
+            if not self._jobs_dir:
+                raise RecorderError(f'failed to find key {self.__class__._jobs_info_dir_key} in {conf}')
+            if not self._root:
+                raise RecorderError(f'failed to find key {self.__class__._root_dir} in {conf}')
+            self._channel = Channel(os.path.join(self._root, self._find_channel_path(dump_path)))
+        except TypeError:
+            pass
 
     @property
     def channel(self):
-        return Channel(self._channel_path)
+        return self._channel
 
     def _read_conf(self, filename: str):
         with open(filename, 'r') as f:

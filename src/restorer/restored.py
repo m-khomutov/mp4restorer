@@ -28,8 +28,8 @@ class Restored:
         self._name: str = name
         self._sps: bytes = b''
         self._pps: bytes = b''
-        if kwargs.get('channel'):
-            channel: Channel = kwargs.get('channel')
+        channel: Channel = kwargs.get('channel')
+        if channel:
             self._sps = channel.sps
             self._pps = channel.pps
         else:
@@ -103,7 +103,7 @@ def restore():
     parser = argparse.ArgumentParser(description='Verifies dumped mp4 file. Restores if invalid')
     parser.add_argument('-sps', type=str, help='stream SPS')
     parser.add_argument('-pps', type=str, help='stream PPS')
-    parser.add_argument('conf', type=str, help='recorder configuration file')
+    parser.add_argument('-conf', type=str, help='recorder configuration file')
     parser.add_argument('dump', type=str, help='dumped file to check')
     args: argparse.Namespace = parser.parse_args()
     try:
@@ -115,5 +115,5 @@ def restore():
         with open(r_name, 'ab') as f:
             for frame in inv:
                 f.write(len(frame).to_bytes(4, 'big') + frame)
-    except (InvalidError, RecorderError, FileNotFoundError, IndexError, EOFError) as e:
+    except (InvalidError, RecorderError, RestoredError, FileNotFoundError, IndexError, EOFError) as e:
         print(e)

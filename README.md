@@ -6,16 +6,15 @@
 
 **Usage**
 
-`mp4restore [-h] [-sps SPS] [-pps PPS] conf dump`
+`mp4restore [-h] [-sps SPS] [-pps PPS] [-conf CONF] dump`
 
 Verifies mp4 file is correct by reading 'moov' and 'mdat' atoms.
-Restores the file if incorrect using video data from 'mdat' and sps/pps from record channel.
+Restores the file if incorrect using video data from 'mdat' and sps/pps from record channel or arguments.
 Restored file name is compiled from initial file name and '-r' suffix.
-Should be used as dumping post script.
+Can be used as dumping post script.
 
 
 **positional arguments**
-* conf        recorder configuration file
 * dump        mp4 file to check
 
 
@@ -23,6 +22,7 @@ Should be used as dumping post script.
 * -h, --help  show this help message and exit
 * -sps params   stream SPS
 * -pps params   stream PPS
+* -conf CONF  recorder configuration file
 
 
 **restrictions**
@@ -32,6 +32,10 @@ Should be used as dumping post script.
 
 **example**
 
+`mp4restore b55d84be-676c-46cd-b37a-c738524b3c11.mp4 -sps 78118.sps -pps 78118.pps`
+
+**post dump script example**
+
 Value of '.Recording.Dumping.post-script-path' setting
 
-`"post-script-path" : ["/home/mkh/.local/bin/mp4restore","","/opt/netris/istream3/etc/istream3.json","{dump.path}"],`
+`"post-script-path" : ["/home/mkh/.local/bin/mp4restore","","-conf","/opt/netris/istream3/etc/istream3.json","{dump.path}"],`
