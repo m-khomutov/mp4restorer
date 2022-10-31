@@ -1,4 +1,6 @@
 import argparse
+import base64
+
 from .atom.mdat import MediaData
 from .atom.ftyp import FileTypeBox
 from .atom.atom import Container
@@ -39,6 +41,8 @@ class Restored:
             if kwargs.get('pps'):
                 with open(kwargs.get('pps'), 'rb') as f:
                     self._pps = f.read()
+            if kwargs.get('sprop'):
+                self._parse_sprop(kwargs.get('sprop'))
         if not self._sps or not self._pps:
             raise RestoredError('sps/pps are required for restoring')
         self._file = None
@@ -98,18 +102,29 @@ class Restored:
         self._stsz.add(len(frame) + 4)
         self._mdat.inc(len(frame) + 4)
 
+    def _parse_sprop(self, sprop: str):
+        ps = sprop.split(',')
+        if len(ps) == 2:
+            self._sps = base64.b64decode(ps[0])
+            self._pps = base64.b64decode(ps[1])
+
 
 def restore():
     parser = argparse.ArgumentParser(description='Verifies dumped mp4 file. Restores if invalid')
     parser.add_argument('-sps', type=str, help='stream SPS')
     parser.add_argument('-pps', type=str, help='stream PPS')
+    parser.add_argument('-sprop', type=str, help='current-sprop-string')
     parser.add_argument('-conf', type=str, help='recorder configuration file')
     parser.add_argument('dump', type=str, help='dumped file to check')
     args: argparse.Namespace = parser.parse_args()
     try:
         inv: Invalid = Invalid(args.dump)
         r_name: str = args.dump.split('.mp4')[0] + '-r.mp4'
-        with Restored(r_name, channel=Dump(args.conf, args.dump).channel, sps=args.sps, pps=args.pps) as r:
+        with Restored(r_name,
+                      channel=Dump(args.conf, args.dump).channel,
+                      sps=args.sps,
+                      pps=args.pps,
+                      sprop=args.sprop) as r:
             for frame in inv:
                 r.add_frame(frame, 40)
         with open(r_name, 'ab') as f:

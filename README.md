@@ -6,7 +6,7 @@
 
 **Usage**
 
-`mp4restore [-h] [-sps SPS] [-pps PPS] [-conf CONF] dump`
+`mp4restore [-h] [-sps SPS] [-pps PPS] [-sprop SPROP] [-conf CONF] dump`
 
 Verifies mp4 file is correct by reading 'moov' and 'mdat' atoms.
 Restores the file if incorrect using video data from 'mdat' and sps/pps from record channel or arguments.
@@ -22,6 +22,7 @@ Can be used as dumping post script.
 * -h, --help  show this help message and exit
 * -sps params   stream SPS
 * -pps params   stream PPS
+* -sprop SPROP  current-sprop-string
 * -conf CONF  recorder configuration file
 
 
