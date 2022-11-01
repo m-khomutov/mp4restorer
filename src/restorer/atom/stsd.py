@@ -7,6 +7,11 @@ class SampleEntry(Box):
     def __init__(self, type_: str):
         super().__init__(type=type_)
         self._size += 8
+        self._ref_index: int = 1
+
+    def parse(self, file):
+        file.read(6)
+        self._ref_index.from_bytes(file.read(2), 'big')
 
     def __bytes__(self):
         return b''.join([super().__bytes__(), b'\x00\x00\x00\x00\x00\x00\x00\x01'])
@@ -22,6 +27,16 @@ class VisualSampleEntry(SampleEntry):
         self._height: int = 0
         self._avcc: AvcC = avcc
         self._size += 70 + len(self._avcc)
+
+    def parse(self, file):
+        super().parse(file)
+        file.read(16)
+        self._width.from_bytes(file.read(2), 'big')
+        self._height.from_bytes(file.read(2), 'big')
+        file.read(14)
+        self._compressor = file.read(32).decode()
+        file.read(4)
+        self._avcc.parse(file)
 
     def __bytes__(self) -> bytes:
         rc: List[bytes] = [
@@ -46,6 +61,15 @@ class SampleTableBox(FullBox):
         super().__init__('stsd', 0, 0)
         self._entries: List[Box] = []
         self._size += 4
+
+    def parse(self, file):
+        super().parse(file)
+        count: int = int.from_bytes(file.read(4), 'big')
+        for _ in range(count):
+            b: Box = Box(file=file)
+            if str(b) == 'avc1':
+                v: VisualSampleEntry = VisualSampleEntry('', ' '*32, AvcC(b'', b''))
+                v.parse(file)
 
     def add(self, entry: SampleEntry) -> None:
         self._entries.append(entry)

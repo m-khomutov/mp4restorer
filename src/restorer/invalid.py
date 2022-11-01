@@ -2,6 +2,7 @@ import io
 import struct
 from typing import List
 from .atom.atom import Box
+from .atom.stsd import SampleTableBox
 
 
 def file_size(fl) -> int:
@@ -90,7 +91,10 @@ class Invalid:
                 pos: int = self._file.tell()
                 b = Box(file=self._file)
                 atoms.append(str(b))
-                pos += len(b)
+                if str(b) == 'stsd':
+                    stsd: SampleTableBox = SampleTableBox()
+                    stsd.parse(self._file)
+                pos += 8 if b.container() else len(b)
                 if len(b) == 0 or pos == self._size:
                     break
                 self._file.seek(pos)

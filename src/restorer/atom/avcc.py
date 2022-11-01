@@ -9,6 +9,11 @@ class AvcC(Box):
         self._pps: bytes = pps
         self._size += 11 + len(self._sps) + len(self._pps)
 
+    def parse(self, file):
+        super()._parse(file)
+        print(f'TYPE: {self._type}')
+        pass
+
     def __bytes__(self) -> bytes:
         rc: List[bytes] = [
             super().__bytes__(),

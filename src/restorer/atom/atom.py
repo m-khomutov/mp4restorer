@@ -7,7 +7,13 @@ class Box:
         self._size: int = 8
         self._type: str = kwargs.get('type', '    ')
         self._extended_type: bytes = kwargs.get('extended', b'')
-        self._from_file(kwargs.get('file'))
+        self._parse(kwargs.get('file'))
+
+    def container(self) -> bool:
+        ret = (self._type == 'moov' or self._type == 'trak' or self._type == 'edts')
+        ret = (ret or self._type == 'mdia' or self._type == 'minf' or self._type == 'dinf')
+        ret = (ret or self._type == 'stbl' or self._type == 'mvex' or self._type == 'moof')
+        return ret or self._type == 'traf'
 
     def __bytes__(self) -> bytes:
         rc: List[bytes] = []
@@ -30,7 +36,7 @@ class Box:
     def __repr__(self):
         return f'{self.__class__.__name__}(size={self._size} type={self._type})'
 
-    def _from_file(self, file):
+    def _parse(self, file):
         if file:
             self._size, t = struct.unpack('!II', file.read(8))
             self._type = ''.join(chr((t >> (i * 8)) & 0xff) for i in range(3, -1, -1))
@@ -44,6 +50,10 @@ class FullBox(Box):
         self._version: int = version_
         self._flags: int = flags_
         self._size += 4
+
+    def parse(self, file):
+        self._version.from_bytes(file.read(1), 'big')
+        self._flags.from_bytes(file.read(3), 'big')
 
     def __bytes__(self) -> bytes:
         rc: List[bytes] = [
