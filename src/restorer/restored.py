@@ -68,7 +68,7 @@ class Restored:
         self._stsc: SampleToChunkBox = SampleToChunkBox()
         self._stss: SyncSampleBox = SyncSampleBox()
         self._stsz: SampleSizeBox = SampleSizeBox()
-        self._stco: ChunkOffsetBox = ChunkOffsetBox()
+        self._stco: ChunkOffsetBox = ChunkOffsetBox(kwargs.get('co64'))
         self._mdat: MediaData = MediaData()
 
     def __enter__(self):
@@ -124,7 +124,8 @@ def restore():
                       channel=Dump(args.conf, args.dump).channel,
                       sps=args.sps,
                       pps=args.pps,
-                      sprop=args.sprop) as r:
+                      sprop=args.sprop,
+                      co64=len(inv) > 0xfffffff0) as r:
             for frame in inv:
                 r.add_frame(frame, 40)
         with open(r_name, 'ab') as f:

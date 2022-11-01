@@ -69,9 +69,13 @@ class Invalid:
             self._file = open(name, 'rb')
         except OSError as err:
             raise InvalidError(f'{name} error: {err}')
+        self._size = file_size(self._file)
         if self._verify():
             raise InvalidError(f'{name} is valid')
         self._file.seek(0)
+
+    def __len__(self):
+        return self._size
 
     def __del__(self):
         self._file.close()
@@ -81,14 +85,13 @@ class Invalid:
 
     def _verify(self) -> bool:
         atoms: List[str] = []
-        fs = file_size(self._file)
         while True:
             try:
                 pos: int = self._file.tell()
                 b = Box(file=self._file)
                 atoms.append(str(b))
                 pos += len(b)
-                if len(b) == 0 or pos == fs:
+                if len(b) == 0 or pos == self._size:
                     break
                 self._file.seek(pos)
             except struct.error:
