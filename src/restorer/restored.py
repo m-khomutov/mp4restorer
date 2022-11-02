@@ -118,10 +118,14 @@ def restore():
     parser.add_argument('dump', type=str, help='dumped file to check')
     args: argparse.Namespace = parser.parse_args()
     try:
-        inv: Invalid = Invalid(args.dump)
+        channel = Dump(args.conf, args.dump).channel
+        verify_dump: bool = (args.sps and args.pps) or args.sprop or channel
+        inv: Invalid = Invalid(args.dump, verify_dump)
+        if not verify_dump:
+            args.sprop = inv.sprop()
         r_name: str = args.dump.split('.mp4')[0] + '-r.mp4'
         with Restored(r_name,
-                      channel=Dump(args.conf, args.dump).channel,
+                      channel=channel,
                       sps=args.sps,
                       pps=args.pps,
                       sprop=args.sprop,

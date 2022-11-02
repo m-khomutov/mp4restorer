@@ -3,16 +3,28 @@ from .atom import Box
 
 
 class AvcC(Box):
-    def __init__(self, sps: bytes, pps: bytes):
+    def __init__(self, sps: bytes, pps: bytes) -> None:
         super().__init__(type='avcC')
         self._sps: bytes = sps
         self._pps: bytes = pps
         self._size += 11 + len(self._sps) + len(self._pps)
 
-    def parse(self, file):
+    def parse(self, file) -> None:
         super()._parse(file)
-        print(f'TYPE: {self._type}')
-        pass
+        file.read(6)
+        count: int = int.from_bytes(file.read(2), 'big')
+        self._sps = file.read(count)
+        file.read(1)
+        count: int = int.from_bytes(file.read(2), 'big')
+        self._pps = file.read(count)
+
+    @property
+    def sps(self) -> bytes:
+        return self._sps
+
+    @property
+    def pps(self) -> bytes:
+        return self._pps
 
     def __bytes__(self) -> bytes:
         rc: List[bytes] = [

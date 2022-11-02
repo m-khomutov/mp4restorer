@@ -38,6 +38,18 @@ class VisualSampleEntry(SampleEntry):
         file.read(4)
         self._avcc.parse(file)
 
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def avcc(self):
+        return self._avcc
+
     def __bytes__(self) -> bytes:
         rc: List[bytes] = [
             super().__bytes__(),
@@ -68,8 +80,8 @@ class SampleTableBox(FullBox):
         for _ in range(count):
             b: Box = Box(file=file)
             if str(b) == 'avc1':
-                v: VisualSampleEntry = VisualSampleEntry('', ' '*32, AvcC(b'', b''))
-                v.parse(file)
+                self._entries.append(VisualSampleEntry(str(b), ' '*32, AvcC(b'', b'')))
+                self._entries[-1].parse(file)
 
     def add(self, entry: SampleEntry) -> None:
         self._entries.append(entry)
@@ -79,3 +91,6 @@ class SampleTableBox(FullBox):
         rc: List[bytes] = [super().__bytes__(), len(self._entries).to_bytes(4, 'big')]
         rc.extend([bytes(e) for e in self._entries])
         return b''.join(rc)
+
+    def __iter__(self):
+        return (x for x in self._entries)
